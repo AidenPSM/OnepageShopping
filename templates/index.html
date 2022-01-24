@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+    <title>One Page Gukbap</title>
+
+    <meta property="og:title" content="Gukbap" />
+    <meta property="og:description" content="Want to eat this!" />
+    <meta property="og:image" content="{{ url_for('static', filename='ogimage.jpg') }}" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Jua', sans-serif;
+        }
+
+        .main {
+            width: 600px;
+            margin: 50px auto 50px auto;
+            padding: 10px;
+        }
+
+        img {
+            width: 100%;
+            padding-bottom: 20px;
+        }
+
+        h1, h4 {
+            display: inline;
+        }
+
+        .price {
+            display: inline;
+        }
+
+        .btn {
+            width: 100px;
+            display: block;
+            margin: auto;
+        }
+
+        #exRate {
+            color: blue;
+            font-weight: bold;
+            padding-bottom: 20px;
+        }
+
+        .table {
+            margin-top: 20px;
+        }
+        #orderlist {
+            margin-top: 20px;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            getRate();
+            listing()
+        });
+
+        function listing() {
+            $.ajax({
+                type: "GET",
+                url: "/order",
+                data: {},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        let orders = response['orders'];
+                        for (let i = 0; i < orders.length; i++) {
+                            let name = orders[i]['name'];
+                            let amount = orders[i]['amount'];
+                            let address = orders[i]['address'];
+                            let phone = orders[i]['phone'];
+
+                            let temp_html = `<tr>
+                                                <th scope="row">${name}</th>
+                                                <td>${amount}</td>
+                                                <td>${address}</td>
+                                                <td>${phone}</td>
+                                            </tr>`
+                            $('#orders-box').append(temp_html);
+                        }
+                    }
+                }
+            })
+        }
+
+        function getRate() {
+            $.ajax({
+                type: "GET",
+                url: "http://spartacodingclub.shop/sparta_api/rate",
+                data: {},
+                success: function (response) {
+                    let exchangeRate = response['rate'];
+                    let ratetext = `USD - KRW Exchange Rate: ${exchangeRate}`;
+                    $('#exRate').append(ratetext);
+                }
+            })
+        }
+
+        function order() {
+            let name = $('#order-name').val();
+            let amount = $('#order-amount').val();
+            let address = $('#order-address').val();
+            let phone = $('#order-phone').val();
+
+            $.ajax({
+                type: "POST",
+                url: "/order",
+                data: {name_give: name, amount_give: amount, address_give: address, phone_give: phone},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<div class="main">
+    <img src="http://ohfarm2018.imghost.cafe24.com/goods/soonde/gukbap/2020/02/soonde01.jpg"/>
+    <div class="intro">
+        <h1>Gukbap 국밥</h1>
+        <p class="price">6500 won / Each </p>
+        <p><h4>Gukbap 국밥</h4> is a compound of guk (soup) and bap (cooked rice). There are various kinds of gukbap in
+        each region of Korea, and representatively, Cheonan's sundae gukbap and Busan's pork gukbap are famous.</p>
+    </div>
+    <div id="exRate">
+    </div>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
+        </div>
+        <input id="order-name" type="text" class="form-control" aria-label="Default"
+               aria-describedby="inputGroup-sizing-default" placeholder="First Name / Last Name">
+    </div>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="inputGroupSelect01">Amount</label>
+        </div>
+        <select id="order-amount" class="custom-select" id="inputGroupSelect01">
+            <option value=""disabled selected hidden>-- Choose product's amounts --</option>
+            <option value="One">One</option>
+            <option value="Two">Two</option>
+            <option value="Three">Three</option>
+        </select>
+    </div>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Address</span>
+        </div>
+        <input id="order-address" type="text" class="form-control" aria-label="Default"
+               aria-describedby="inputGroup-sizing-default">
+    </div>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Phone Number</span>
+        </div>
+        <input id="order-phone" type="text" class="form-control" aria-label="Default"
+               aria-describedby="inputGroup-sizing-default">
+    </div>
+    <button onclick="order()" type="button" class="btn btn-primary text-center">Order!</button>
+    <table class="table">
+        <h2 id="orderlist">Order List</h2>
+        <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Address</th>
+            <th scope="col">Phone</th>
+        </tr>
+        </thead>
+        <tbody id="orders-box">
+        </tbody>
+    </table>
+</div>
+</body>
+
+</html>
